@@ -8,4 +8,5 @@
   :serial t
   :depends-on ("aoc-util")
   :components ((:file "package")
-               (:file "day01")))
+               (:file "day01")
+	       (:file "day02")))
