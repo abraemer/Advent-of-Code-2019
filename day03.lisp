@@ -56,6 +56,7 @@
        :for position := (funcall wire-iterator)
        :for stepcount :upfrom 1
        :while position
+       :unless (gethash position position-set)
        :do (setf (gethash position position-set) stepcount))
     (loop
        :with wire-iterator := (wire-iterator (second wires))
