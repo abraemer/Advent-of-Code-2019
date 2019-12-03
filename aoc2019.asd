@@ -10,4 +10,5 @@
   :components ((:file "package")
 	       (:file "intcode")
                (:file "day01")
-	       (:file "day02")))
+	       (:file "day02")
+	       (:file "day03")))
