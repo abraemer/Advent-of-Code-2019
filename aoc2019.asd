@@ -11,4 +11,5 @@
 	       (:file "intcode")
                (:file "day01")
 	       (:file "day02")
-	       (:file "day03")))
+	       (:file "day03")
+	       (:file "day04")))

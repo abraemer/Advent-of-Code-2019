@@ -21,3 +21,7 @@
 (defpackage #:aoc2019.day03
   (:use #:cl #:aoc-util)
   (:nicknames #:day03))
+
+(defpackage #:aoc2019.day04
+  (:use #:cl #:aoc-util)
+  (:nicknames #:day04))
