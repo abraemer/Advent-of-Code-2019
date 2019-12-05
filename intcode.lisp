@@ -7,9 +7,12 @@
 
 (defstruct (intcode-program (:conc-name prog-))
   memory
+  (inputs nil)
+  (outputs nil)
+  (running t)
   (ip 0 :type fixnum))
 
-(defun load-program (string &optional (changes nil))
+(defun load-program (string &key (changes nil) (inputs nil))
   (let* ((raw-data (extract-integers string))
 	 (program (make-array (length raw-data)
 			      :element-type 'fixnum
@@ -17,7 +20,7 @@
     (loop
        :for (place value) :in changes
        :do (setf (aref program place) value))
-    (make-intcode-program :memory program)))
+    (make-intcode-program :memory program :inputs inputs)))
 
 (defun get-next-opcode (program)
   (let ((ip (prog-ip program))
@@ -50,27 +53,33 @@
     func))
 
 (defmacro define-intcode (opcode (&rest parameters) &body body)
-  (alexandria:with-gensyms (mem ip program continue-p mode-list jumped)
+  (alexandria:with-gensyms (mem ip program mode-list jumped)
     `(%register-instruction
       ,opcode
       (lambda (,program)
-	(let ((,continue-p t)
-	      (,jumped nil)
+	(let ((,jumped nil)
 	      (,mem (prog-memory ,program))
 	      (,ip (prog-ip ,program))
 	      (,mode-list (get-next-parameter-modes ,program ,(length parameters))))
 	  (declare (ignorable ,mem ,ip ,mode-list))
+	  ;; define methods for interacting with the program's execution
 	  (macrolet ((reg (adress)
                        (list 'aref ',mem adress)))
 	    (flet ((jump (to)
 		     (setf ,jumped t)
 		     (setf (prog-ip ,program) to))
 		   (halt ()
-		     (setf ,continue-p 'nil))
-					;define this to abstract the input - maybe want to automatize at some point
+		     (setf (prog-running ,program) nil))
 		   (input ()
-		     (read)))
-	      (declare (ignorable #'jump #'halt #'input))
+		     (if (not (null (prog-inputs ,program)))
+			 (pop (prog-inputs ,program))
+			 (progn (format t "Input please: >")
+				(read))))
+		   (output (something)
+		     (push something (prog-outputs ,program))))
+	      (declare (ignorable #'jump #'halt #'input #'output))
+	      ;; bind parameters to values
+	      ;; respecting the parameter mode
 	      (symbol-macrolet ,(loop
 				   :for param :in parameters
 				   :for index :upfrom 0
@@ -79,9 +88,9 @@
 							    (0 (reg ,param-value-at))
 							    (1 ,param-value-at)))))
 		,@body)))
-	  (unless ,jumped
+	  (when (and (prog-running ,program) (not ,jumped))
 	    (incf (prog-ip ,program) (+ 1 ,(length parameters))))
-	  ,continue-p)))))
+	  (prog-running ,program))))))
 
 ;;; Execution of a program
 
@@ -97,8 +106,8 @@
 	   program))
 
 (defun execute-program! (program)
-  (loop
-     :while (execute-instruction! program)))
+  (loop :while (execute-instruction! program))
+  (reverse (prog-outputs program)))
 
 (defun evaluate-program! (program)
   (execute-program! program)
@@ -110,13 +119,10 @@
   (setf output (+ a b)))
 (define-intcode 2 (a b output)
   (setf output (* a b)))
-(define-intcode 99 ()
-  (halt))
 (define-intcode 3 (a)
-  (format t "~%Input pls: >")
   (setf a (input)))
 (define-intcode 4 (a)
-  (format t "~a~%" a))
+  (output a))
 (define-intcode 5 (bool addr) ;jump-if-true
   (unless (= bool 0)
     (jump addr)))
@@ -127,3 +133,6 @@
   (setf output (if (< a b) 1 0)))
 (define-intcode 8 (a b output)
   (setf output (if (= a b) 1 0))) ;equals
+
+(define-intcode 99 ()
+  (halt))
