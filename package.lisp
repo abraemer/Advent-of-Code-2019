@@ -34,6 +34,10 @@
   (:use #:cl #:aoc-util)
   (:nicknames #:day06))
 
+(defpackage #:aoc2019.day07
+  (:use #:cl #:aoc-util)
+  (:nicknames #:day7))
+
 (defpackage #:aoc2019.day08
   (:use #:cl #:aoc-util)
   (:nicknames #:day08))
