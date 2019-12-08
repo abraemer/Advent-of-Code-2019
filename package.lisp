@@ -33,3 +33,7 @@
 (defpackage #:aoc2019.day06
   (:use #:cl #:aoc-util)
   (:nicknames #:day06))
+
+(defpackage #:aoc2019.day08
+  (:use #:cl #:aoc-util)
+  (:nicknames #:day08))
