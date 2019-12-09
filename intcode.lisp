@@ -10,13 +10,18 @@
   (inputs nil)
   (outputs nil)
   (running t)
-  (ip 0 :type fixnum))
+  (ip 0 :type fixnum)
+  (relative-base 0 :type fixnum))
 
-(defun load-program (string &key (changes nil) (inputs nil))
+(defun load-program (string &key (changes nil) (inputs nil) (mem-factor 100))
   (let* ((raw-data (extract-integers string))
-	 (program (make-array (length raw-data)
+	 (program (make-array (* (length raw-data) mem-factor)
 			      :element-type 'fixnum
-			      :initial-contents raw-data)))
+			      :initial-element 0)))
+    (loop
+       :for value :in raw-data
+       :for index :upfrom 0
+       :do (setf (aref program index) value))
     (loop
        :for (place value) :in changes
        :do (setf (aref program place) value))
@@ -41,7 +46,7 @@
 
 ;;; opcode registry
 
-(defparameter *instructions* (make-array 100))
+(defparameter *instructions* (make-array 100 :initial-element nil))
 
 (defun %register-instruction (opcode lambda)
   (setf (aref *instructions* opcode) lambda))
@@ -53,18 +58,19 @@
     func))
 
 (defmacro define-intcode (opcode (&rest parameters) &body body)
-  (alexandria:with-gensyms (mem ip program mode-list jumped)
+  (alexandria:with-gensyms (mem ip program mode-list jumped rel-base)
     `(%register-instruction
       ,opcode
       (lambda (,program)
 	(let ((,jumped nil)
 	      (,mem (prog-memory ,program))
 	      (,ip (prog-ip ,program))
+	      (,rel-base (prog-relative-base ,program))
 	      (,mode-list (get-next-parameter-modes ,program ,(length parameters))))
 	  (declare (ignorable ,mem ,ip ,mode-list))
 	  ;; define methods for interacting with the program's execution
 	  (macrolet ((reg (adress)
-                       (list 'aref ',mem adress)))
+		       (list 'aref ',mem adress)))
 	    (flet ((jump (to)
 		     (setf ,jumped t)
 		     (setf (prog-ip ,program) to))
@@ -76,8 +82,11 @@
 			 (progn (format t "Input please: >")
 				(read))))
 		   (output (something)
-		     (push something (prog-outputs ,program))))
-	      (declare (ignorable #'jump #'halt #'input #'output))
+		     (push something (prog-outputs ,program)))
+		   (adjust-relative-base (delta)
+		     (incf (prog-relative-base ,program) delta)
+		     (incf ,rel-base delta)))
+	      (declare (ignorable #'jump #'halt #'input #'output #'adjust-relative-base))
 	      ;; bind parameters to values
 	      ;; respecting the parameter mode
 	      (symbol-macrolet ,(loop
@@ -86,7 +95,8 @@
 				   :for param-value-at := `(+ ,ip 1 ,index)
 				   :collect `(,param (reg (ecase (nth ,index ,mode-list)
 							    (0 (reg ,param-value-at))
-							    (1 ,param-value-at)))))
+							    (1 ,param-value-at)
+							    (2 (+ (reg ,param-value-at) ,rel-base))))))
 		,@body)))
 	  (when (and (prog-running ,program) (not ,jumped))
 	    (incf (prog-ip ,program) (+ 1 ,(length parameters))))
@@ -113,6 +123,12 @@
   (execute-program! program)
   (aref (prog-memory program) 0))
 
+(defun run-till-output! (program)
+  (loop
+     :with initial-length := (length (prog-outputs program))
+     :while (execute-instruction! program)
+     :until (> (length (prog-outputs program)) initial-length)))
+
 ;;; Known opcodes
 
 (define-intcode 1 (a b output)
@@ -133,6 +149,7 @@
   (setf output (if (< a b) 1 0)))
 (define-intcode 8 (a b output)
   (setf output (if (= a b) 1 0))) ;equals
-
+(define-intcode 9 (delta) ;adjust relative base
+  (adjust-relative-base delta))
 (define-intcode 99 ()
   (halt))

@@ -8,7 +8,9 @@
 	   #:set-parameters!
 	   #:execute-instruction!
 	   #:execute-program!
-	   #:evaluate-program!))
+	   #:evaluate-program!
+	   #:prog-outputs #:prog-inputs #:prog-memory
+	   #:prog-relative-base #:prog-ip #:prog-running-p))
 
 (defpackage #:aoc2019.day01
   (:use #:cl #:aoc-util)
@@ -35,9 +37,13 @@
   (:nicknames #:day06))
 
 (defpackage #:aoc2019.day07
-  (:use #:cl #:aoc-util)
+  (:use #:cl #:aoc-util #:intcode)
   (:nicknames #:day7))
 
 (defpackage #:aoc2019.day08
   (:use #:cl #:aoc-util)
   (:nicknames #:day08))
+
+(defpackage #:aoc2019.day09
+  (:use #:cl #:aoc-util #:intcode)
+  (:nicknames #:day09))
