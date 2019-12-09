@@ -4,11 +4,10 @@
   (:use #:cl #:aoc-util)
   (:nicknames #:intcode)
   (:export #:load-program
-	   #:define-intcode
-	   #:set-parameters!
-	   #:execute-instruction!
-	   #:execute-program!
-	   #:evaluate-program!
+	   #:prog-running
+	   #:set-parameters! #:send-input
+	   #:execute-instruction! #:execute-program!
+	   #:evaluate-program! #:run-till-output!
 	   #:prog-outputs #:prog-inputs #:prog-memory
 	   #:prog-relative-base #:prog-ip #:prog-running-p))
 
@@ -38,7 +37,7 @@
 
 (defpackage #:aoc2019.day07
   (:use #:cl #:aoc-util #:intcode)
-  (:nicknames #:day7))
+  (:nicknames #:day07))
 
 (defpackage #:aoc2019.day08
   (:use #:cl #:aoc-util)

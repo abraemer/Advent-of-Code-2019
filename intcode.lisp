@@ -44,6 +44,9 @@
        :then (multiple-value-list (floor param-modes 10))
        :collect curr-mode)))
 
+(defun send-input (program input)
+  (setf (prog-inputs program) (append (prog-inputs program) (list input))))
+
 ;;; opcode registry
 
 (defparameter *instructions* (make-array 100 :initial-element nil))
@@ -77,10 +80,9 @@
 		   (halt ()
 		     (setf (prog-running ,program) nil))
 		   (input ()
-		     (if (not (null (prog-inputs ,program)))
-			 (pop (prog-inputs ,program))
-			 (progn (format t "Input please: >")
-				(read))))
+		     (if (null (prog-inputs ,program))
+			 (progn (format t "Input please: >") (read))
+			 (pop (prog-inputs ,program))))
 		   (output (something)
 		     (push something (prog-outputs ,program)))
 		   (adjust-relative-base (delta)
@@ -127,7 +129,8 @@
   (loop
      :with initial-length := (length (prog-outputs program))
      :while (execute-instruction! program)
-     :until (> (length (prog-outputs program)) initial-length)))
+     :until (> (length (prog-outputs program)) initial-length))
+  (first (prog-outputs program)))
 
 ;;; Known opcodes
 
