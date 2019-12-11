@@ -123,7 +123,8 @@
 	   program))
 
 (defun execute-program! (program)
-  (loop :while (execute-instruction! program)))
+  (loop :while (execute-instruction! program))
+  program)
 
 (defun run-till-output! (program)
   (loop
