@@ -50,3 +50,7 @@
 (defpackage #:aoc2019.day10
   (:use #:cl #:aoc-util)
   (:nicknames #:day10))
+
+(defpackage #:aoc2019.day11
+  (:use #:cl #:aoc-util #:intcode)
+  (:nicknames #:day11))
