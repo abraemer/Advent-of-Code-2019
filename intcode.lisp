@@ -13,7 +13,7 @@
   (ip 0 :type fixnum)
   (relative-base 0 :type fixnum))
 
-(defun load-program (string &key (changes nil) (inputs nil) (mem-factor 100))
+(defun load-program (string &key (changes nil) (inputs nil) (outputs nil) (mem-factor 100))
   (let* ((raw-data (extract-integers string))
 	 (program (make-array (* (length raw-data) mem-factor)
 			      :element-type 'fixnum
@@ -25,7 +25,7 @@
     (loop
        :for (place value) :in changes
        :do (setf (aref program place) value))
-    (make-intcode-program :memory program :inputs inputs)))
+    (make-intcode-program :memory program :inputs inputs :outputs outputs)))
 
 (defun get-next-opcode (program)
   (let ((ip (prog-ip program))
@@ -80,11 +80,16 @@
 		   (halt ()
 		     (setf (prog-running ,program) nil))
 		   (input ()
-		     (if (null (prog-inputs ,program))
-			 (progn (format t "Input please: >") (read))
-			 (pop (prog-inputs ,program))))
+		     (let ((inputs (prog-inputs ,program)))
+		       (cond
+			   ((null inputs)
+			    (format t "Input please: >") (read))
+			 ((listp inputs) (pop (prog-inputs ,program)))
+			 ((functionp inputs) (funcall inputs)))))
 		   (output (something)
-		     (push something (prog-outputs ,program)))
+		     (if (functionp (prog-outputs ,program))
+			 (funcall (prog-outputs ,program) something)
+			 (push something (prog-outputs ,program))))
 		   (adjust-relative-base (delta)
 		     (incf (prog-relative-base ,program) delta)
 		     (incf ,rel-base delta)))
@@ -118,8 +123,7 @@
 	   program))
 
 (defun execute-program! (program)
-  (loop :while (execute-instruction! program))
-  (reverse (prog-outputs program)))
+  (loop :while (execute-instruction! program)))
 
 (defun evaluate-program! (program)
   (execute-program! program)
