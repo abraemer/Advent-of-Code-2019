@@ -125,10 +125,6 @@
 (defun execute-program! (program)
   (loop :while (execute-instruction! program)))
 
-(defun evaluate-program! (program)
-  (execute-program! program)
-  (aref (prog-memory program) 0))
-
 (defun run-till-output! (program)
   (loop
      :with initial-length := (length (prog-outputs program))
