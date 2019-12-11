@@ -14,7 +14,7 @@
      :with direction := #C(0 1)
      :while (prog-running program)
      :do
-       (setf (prog-inputs program) (make-circular! (list (tile->color-code (gethash position tiles nil)))))
+       (setf (prog-inputs program) (make-circular! (list (gethash position tiles 0))))
        (setf (gethash position tiles) (run-till-output! program))
        (setf direction (* direction (ecase (run-till-output! program)
 				      (0 #C(0  1))
