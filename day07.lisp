@@ -2,14 +2,6 @@
 
 (in-package :aoc2019.day07)
 
-(defun permutations (list)
-  (if (null list)
-      (list nil)
-      (loop
-	 :for element :in list
-	 :nconc (mapcar (lambda (subperm) (cons element subperm))
-			(permutations (remove element list))))))
-
 (defun try-settings-part1 (settings &optional (program-code (first (read-puzzlefile 7))))
   (loop
      :for phase :in settings
@@ -18,10 +10,10 @@
      :finally (return output)))
 
 (defun try-settings-part2 (settings &optional (program-code (first (read-puzzlefile 7))))
-  (let ((thrusters (loop
-		      :for phase :in settings
-		      :collect (load-program program-code :inputs (list phase) :mem-factor 1))))
-    (setf (cdr (last thrusters)) thrusters) ;make it a circular list
+  (let ((thrusters (make-circular!
+		    (loop
+		       :for phase :in settings
+		       :collect (load-program program-code :inputs (list phase) :mem-factor 1)))))
     (send-input (first thrusters) 0)
     (loop
        :for thruster :in thrusters

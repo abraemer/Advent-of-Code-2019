@@ -2,9 +2,6 @@
 
 (in-package :aoc2019.day11)
 
-(defun make-circular! (list)
-  (setf (cdr (last list)) list))
-
 (defun day11 (&optional (part2 nil))
   (let ((position 0)
 	(direction #C(0 1))
