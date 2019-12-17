@@ -27,6 +27,15 @@
        :do (setf (aref program place) value))
     (make-intcode-program :memory program :inputs inputs :outputs outputs)))
 
+(defun copy-program (program)
+  (let ((copy (copy-structure program)))
+    (setf (prog-memory copy) (copy-list (prog-memory program)))
+    (when (listp (prog-inputs program))
+      (setf (prog-inputs copy) (copy-list (prog-inputs program))))
+    (when (listp (prog-outputs program))
+      (setf (prog-outputs copy) (copy-list (prog-outputs program))))
+    copy))
+
 (defun get-next-opcode (program)
   (let ((ip (prog-ip program))
 	(mem (prog-memory program)))
