@@ -62,3 +62,7 @@
 (defpackage #:aoc2019.day13
   (:use #:cl #:aoc-util #:intcode)
   (:nicknames #:day13))
+
+(defpackage #:aoc2019.day19
+  (:use #:cl #:aoc-util #:intcode)
+  (:nicknames #:day19))
