@@ -11,6 +11,8 @@
 	   #:prog-outputs #:prog-inputs #:prog-memory
 	   #:prog-relative-base #:prog-ip #:prog-running-p))
 
+(setf aoc-util:*year* "2019")
+
 (defpackage #:aoc2019.day01
   (:use #:cl #:aoc-util)
   (:nicknames #:day01))
@@ -62,6 +64,10 @@
 (defpackage #:aoc2019.day13
   (:use #:cl #:aoc-util #:intcode)
   (:nicknames #:day13))
+
+(defpackage #:aoc2019.day16
+  (:use #:cl #:aoc-util)
+  (:nicknames #:day16))
 
 (defpackage #:aoc2019.day19
   (:use #:cl #:aoc-util #:intcode)
